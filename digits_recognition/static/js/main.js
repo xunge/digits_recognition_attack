@@ -11,14 +11,23 @@ $("#img_input").on("change", function (e) {
     // 渲染文件
     reader.onload = function (arg) {
         imgSrc = arg.target.result;
-        // var img = '<img id="update" src="' + arg.target.result + '" alt="preview"/>';
-        // $(".preview_box").empty().append(img);
+        var img = '<img id="update" src="' + arg.target.result + '" alt="preview"/>';
+        $(".preview_box").empty().append(img);
     }
 });
 
-var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+var _createClass = function ()
+{ function defineProperties(target, props)
+{ for (var i = 0; i < props.length; i++)
+{ var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false;
+descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true;
+Object.defineProperty(target, descriptor.key, descriptor); } }
+return function (Constructor, protoProps, staticProps)
+{ if (protoProps) defineProperties(Constructor.prototype, protoProps);
+if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
-function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+function _classCallCheck(instance, Constructor)
+{ if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var inputs = [];
 /* global $ */
@@ -128,7 +137,7 @@ var Main = function () {
         value: function recognizeDraw() {
             var sendPackage = {"inputs": JSON.stringify(inputs)};
             $.post("/process", sendPackage, function (data) {
-                var newData = eval(data);
+                var newData = eval(data);   //#将字符串转换为整数。
                 for (var _i = 0; _i < 2; _i++) {
                     var max = 0;
                     var max_index = 0;

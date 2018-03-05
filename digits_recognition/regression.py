@@ -41,6 +41,6 @@ with tf.Session() as sess:
     #0.9192 准确率
     print(sess.run(accuracy, feed_dict={x: data.test.images, y_: data.test.labels}))
     path = saver.save(
-        sess, os.path.join(os.path.dirname(__file__), 'data', 'regression.ckpt'),
+        sess, os.path.join(os.path.dirname(__file__), 'model', 'regression.ckpt'),
         write_meta_graph=False, write_state=False)
     print("Saved:", path)
