@@ -1,5 +1,8 @@
 'use strict';
 var imgSrc = '';
+var newData = [];
+var inputs = [];
+
 $("#img_input").on("change", function (e) {
     var file = e.target.files[0]; //获取图片资源
     // 只选择图片文件
@@ -29,7 +32,7 @@ if (staticProps) defineProperties(Constructor, staticProps); return Constructor;
 function _classCallCheck(instance, Constructor)
 { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var inputs = [];
+
 /* global $ */
 var Main = function () {
     function Main() {
@@ -37,7 +40,6 @@ var Main = function () {
 
         this.canvas = document.getElementById('main');
         this.input = document.getElementById('input');
-        this.update = document.getElementById('update');
         this.canvas.width = 449; // 16 * 28 + 1
         this.canvas.height = 449; // 16 * 28 + 1
         this.ctx = this.canvas.getContext('2d');
@@ -69,7 +71,7 @@ var Main = function () {
             //     this.ctx.stroke();
             // }
             // this.drawInput();
-            $('#output td').text('').removeClass('success');
+            $('#output').find('td').text('').removeClass('success');
         }
     }, {
         key: 'onMouseDown',
@@ -83,13 +85,15 @@ var Main = function () {
         value: function onMouseUp() {
             this.drawing = false;
             // this.drawInput();
+            // this.attack();
+            // this.recognizeDraw();
         }
     }, {
         key: 'onMouseMove',
         value: function onMouseMove(e) {
             if (this.drawing) {
                 var curr = this.getPosition(e.clientX, e.clientY);
-                this.ctx.lineWidth = 16;
+                this.ctx.lineWidth = 25;
                 this.ctx.lineCap = 'round';
                 this.ctx.beginPath();
                 this.ctx.moveTo(this.prev.x, this.prev.y);
@@ -108,60 +112,123 @@ var Main = function () {
                 y: clientY - rect.top
             };
         }
-    }, {
+    },
+    // {
+    //     key: 'drawInput',
+    //     value: function drawInput() {
+    //         var ctx = this.input.getContext('2d');
+    //         var img = new Image();
+    //         img.onload = function () {
+    //             inputs = [];
+    //             var small = document.createElement('canvas').getContext('2d');
+    //             small.drawImage(img, 0, 0, img.width, img.height, 0, 0, 28, 28);
+    //             var data = small.getImageData(0, 0, 28, 28).data;
+    //             for (var i = 0; i < 28; i++) {
+    //                 for (var j = 0; j < 28; j++) {
+    //                     var n = 4 * (i * 28 + j);
+    //                     inputs[i * 28 + j] = (data[n] + data[n + 1] + data[n + 2]) / 3;
+    //                     ctx.fillStyle = 'rgb(' + [data[n], data[n + 1], data[n + 2]].join(',') + ')';
+    //                     ctx.fillRect(j * 5, i * 5, 5, 5);
+    //                 }
+    //             }
+    //             if (Math.min.apply(Math, inputs) === 255) {
+    //                 return ;
+    //             }
+    //         };
+    //         img.src = this.canvas.toDataURL();
+    //     }
+    // },
+    {
         key: 'drawInput',
         value: function drawInput() {
-            var ctx = this.input.getContext('2d');
             var img = new Image();
+            // alert("asdf");
             img.onload = function () {
                 inputs = [];
                 var small = document.createElement('canvas').getContext('2d');
                 small.drawImage(img, 0, 0, img.width, img.height, 0, 0, 28, 28);
                 var data = small.getImageData(0, 0, 28, 28).data;
+                console.log(data);
                 for (var i = 0; i < 28; i++) {
                     for (var j = 0; j < 28; j++) {
                         var n = 4 * (i * 28 + j);
                         inputs[i * 28 + j] = (data[n] + data[n + 1] + data[n + 2]) / 3;
-                        ctx.fillStyle = 'rgb(' + [data[n], data[n + 1], data[n + 2]].join(',') + ')';
-                        ctx.fillRect(j * 5, i * 5, 5, 5);
                     }
                 }
+                console.log(inputs);
                 if (Math.min.apply(Math, inputs) === 255) {
                     return;
                 }
+                newData = [];
+                $.ajax({
+                    url: "/drawInput",
+                    data: {"inputs": JSON.stringify(inputs)},
+                    type: "POST",
+                    async: false,
+                    dataType: "text",
+                    success: function (data) {
+                        newData = data;
+                    }
+                });
+                console.log(newData);
+                // $(".drawInput").empty().append(newData);
+                var img1 = '<img id="update" src="' + newData + '" alt="preview"/>';
+                $(".preview_box").empty().append(img1);
             };
             img.src = this.canvas.toDataURL();
         }
     }, {
+        key: 'attack',
+        value: function attack() {
+            newData = [];
+            $.ajax({
+                url: "/attack",
+                data: {"inputs": JSON.stringify(inputs)},
+                type: "POST",
+                async: false,
+                dataType: "text",
+                success: function (data) {
+                    newData = data;
+                }
+            });
+            $(".attack").empty().append(newData);
+        }
+    },{
         key: 'recognizeDraw',
         value: function recognizeDraw() {
-            var sendPackage = {"inputs": JSON.stringify(inputs)};
-            $.post("/process", sendPackage, function (data) {
-                var newData = eval(data);   //#将字符串转换为整数。
-                for (var _i = 0; _i < 2; _i++) {
-                    var max = 0;
-                    var max_index = 0;
-                    for (var _j = 0; _j < 10; _j++) {
-                        var value = Math.round(newData[_i][_j] * 1000);
-                        if (value > max) {
-                            max = value;
-                            max_index = _j;
+            $.ajax({
+                url: "/process",
+                data: {"inputs": JSON.stringify(inputs)},
+                type: "POST",
+                async: false,
+                dataType: "json",
+                success: function (data) {
+                    var newData = eval(data);   //#将字符串转换为整数。
+                    for (var _i = 0; _i < 2; _i++) {
+                        var max = 0;
+                        var max_index = 0;
+                        for (var _j = 0; _j < 10; _j++) {
+                            var value = Math.round(newData[_i][_j] * 1000);
+                            if (value > max) {
+                                max = value;
+                                max_index = _j;
+                            }
+                            var digits = String(value).length;
+                            for (var k = 0; k < 3 - digits; k++) {
+                                value = '0' + value;
+                            }
+                            var text = '0.' + value;
+                            if (value > 999) {
+                                text = '1.000';
+                            }
+                            $('#output').find('tr').eq(_j + 1).find('td').eq(_i).text(text);
                         }
-                        var digits = String(value).length;
-                        for (var k = 0; k < 3 - digits; k++) {
-                            value = '0' + value;
-                        }
-                        var text = '0.' + value;
-                        if (value > 999) {
-                            text = '1.000';
-                        }
-                        $('#output tr').eq(_j + 1).find('td').eq(_i).text(text);
-                    }
-                    for (var _j2 = 0; _j2 < 10; _j2++) {
-                        if (_j2 === max_index) {
-                            $('#output tr').eq(_j2 + 1).find('td').eq(_i).addClass('success');
-                        } else {
-                            $('#output tr').eq(_j2 + 1).find('td').eq(_i).removeClass('success');
+                        for (var _j2 = 0; _j2 < 10; _j2++) {
+                            if (_j2 === max_index) {
+                                $('#output').find('tr').eq(_j2 + 1).find('td').eq(_i).addClass('success');
+                            } else {
+                                $('#output').find('tr').eq(_j2 + 1).find('td').eq(_i).removeClass('success');
+                            }
                         }
                     }
                 }
@@ -170,28 +237,37 @@ var Main = function () {
     }, {
         key: 'updateInput',
         value: function updateInput() {
-            var ctx = this.input.getContext('2d');
             var img = new Image();
-            // var img = document.getElementById('update')
-            // img.src = this.update.toDataURL();  // Why the original put in the back?
+            // alert("asdf");
             img.onload = function () {
                 inputs = [];
                 var small = document.createElement('canvas').getContext('2d');
                 small.drawImage(img, 0, 0, img.width, img.height, 0, 0, 28, 28);
                 var data = small.getImageData(0, 0, 28, 28).data;
+                console.log(data);
                 for (var i = 0; i < 28; i++) {
                     for (var j = 0; j < 28; j++) {
                         var n = 4 * (i * 28 + j);
                         inputs[i * 28 + j] = (data[n] + data[n + 1] + data[n + 2]) / 3;
-                        ctx.fillStyle = 'rgb(' + [data[n], data[n + 1], data[n + 2]].join(',') + ')';
-                        ctx.fillRect(j * 5, i * 5, 5, 5);
                     }
                 }
+                console.log(inputs);
                 if (Math.min.apply(Math, inputs) === 255) {
                     return;
                 }
+                newData = [];
+                $.ajax({
+                    url: "/drawInput",
+                    data: {"inputs": JSON.stringify(inputs)},
+                    type: "POST",
+                    async: false,
+                    dataType: "text",
+                    success: function (data) {
+                        newData = data;
+                    }
+                });
+                $(".drawInput").empty().append(newData);
             };
-            // img.src = this.canvas.toDataURL();
             img.src = imgSrc;
         }
     }]);
@@ -223,5 +299,12 @@ $(function () {
     var main = new Main();
     $('#updateInput').click(function () {
         main.updateInput();
+    });
+});
+
+$(function () {
+    var main = new Main();
+    $('#attack_btn').click(function () {
+        main.attack();
     });
 });
