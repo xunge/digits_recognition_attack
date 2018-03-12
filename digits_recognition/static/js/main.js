@@ -57,20 +57,6 @@ var Main = function () {
             this.ctx.lineWidth = 1;
             this.ctx.strokeRect(0, 0, 449, 449);
             this.ctx.lineWidth = 0.05;
-            // for (var i = 0; i < 27; i++) {
-            //     this.ctx.beginPath();
-            //     this.ctx.moveTo((i + 1) * 16, 0);
-            //     this.ctx.lineTo((i + 1) * 16, 449);
-            //     this.ctx.closePath();
-            //     this.ctx.stroke();
-            //
-            //     this.ctx.beginPath();
-            //     this.ctx.moveTo(0, (i + 1) * 16);
-            //     this.ctx.lineTo(449, (i + 1) * 16);
-            //     this.ctx.closePath();
-            //     this.ctx.stroke();
-            // }
-            // this.drawInput();
             $('#output').find('td').text('').removeClass('success');
         }
     }, {
@@ -84,9 +70,6 @@ var Main = function () {
         key: 'onMouseUp',
         value: function onMouseUp() {
             this.drawing = false;
-            // this.drawInput();
-            // this.attack();
-            // this.recognizeDraw();
         }
     }, {
         key: 'onMouseMove',
@@ -112,50 +95,21 @@ var Main = function () {
                 y: clientY - rect.top
             };
         }
-    },
-    // {
-    //     key: 'drawInput',
-    //     value: function drawInput() {
-    //         var ctx = this.input.getContext('2d');
-    //         var img = new Image();
-    //         img.onload = function () {
-    //             inputs = [];
-    //             var small = document.createElement('canvas').getContext('2d');
-    //             small.drawImage(img, 0, 0, img.width, img.height, 0, 0, 28, 28);
-    //             var data = small.getImageData(0, 0, 28, 28).data;
-    //             for (var i = 0; i < 28; i++) {
-    //                 for (var j = 0; j < 28; j++) {
-    //                     var n = 4 * (i * 28 + j);
-    //                     inputs[i * 28 + j] = (data[n] + data[n + 1] + data[n + 2]) / 3;
-    //                     ctx.fillStyle = 'rgb(' + [data[n], data[n + 1], data[n + 2]].join(',') + ')';
-    //                     ctx.fillRect(j * 5, i * 5, 5, 5);
-    //                 }
-    //             }
-    //             if (Math.min.apply(Math, inputs) === 255) {
-    //                 return ;
-    //             }
-    //         };
-    //         img.src = this.canvas.toDataURL();
-    //     }
-    // },
-    {
+    }, {
         key: 'drawInput',
         value: function drawInput() {
             var img = new Image();
-            // alert("asdf");
             img.onload = function () {
                 inputs = [];
                 var small = document.createElement('canvas').getContext('2d');
                 small.drawImage(img, 0, 0, img.width, img.height, 0, 0, 28, 28);
                 var data = small.getImageData(0, 0, 28, 28).data;
-                console.log(data);
                 for (var i = 0; i < 28; i++) {
                     for (var j = 0; j < 28; j++) {
                         var n = 4 * (i * 28 + j);
                         inputs[i * 28 + j] = (data[n] + data[n + 1] + data[n + 2]) / 3;
                     }
                 }
-                console.log(inputs);
                 if (Math.min.apply(Math, inputs) === 255) {
                     return;
                 }
@@ -163,37 +117,46 @@ var Main = function () {
                 $.ajax({
                     url: "/drawInput",
                     data: {"inputs": JSON.stringify(inputs)},
-                    type: "POST",
-                    async: false,
-                    dataType: "text",
-                    success: function (data) {
-                        newData = data;
-                    }
+                    type: "POST"
                 });
-                console.log(newData);
-                // $(".drawInput").empty().append(newData);
-                var img1 = '<img id="update" src="' + newData + '" alt="preview"/>';
-                $(".preview_box").empty().append(img1);
+                var src = "/static/img/origin.png"+"?t=" + Math.random();
+                var timeout=setTimeout(function () {
+                    $("#origin").attr('src', src)
+                }, 100);
             };
             img.src = this.canvas.toDataURL();
         }
     }, {
-        key: 'attack',
-        value: function attack() {
+        key: 'attack_fgsm',
+        value: function attack_fgsm() {
             newData = [];
             $.ajax({
-                url: "/attack",
+                url: "/attack_fgsm",
                 data: {"inputs": JSON.stringify(inputs)},
-                type: "POST",
-                async: false,
-                dataType: "text",
-                success: function (data) {
-                    newData = data;
-                }
+                type: "POST"
             });
-            $(".attack").empty().append(newData);
+            var src = "/static/img/fgsm_mnist.png"+"?t=" + Math.random();
+            var timeout=setTimeout(function () {
+                $("#fgsm_mnist").attr('src', src)
+            }, 100);
         }
-    },{
+    },
+        {
+        key: 'attack_pgd',
+        value: function attack_pgd() {
+            newData = [];
+            $.ajax({
+                url: "/attack_pgd",
+                data: {"inputs": JSON.stringify(inputs)},
+                type: "POST"
+            });
+            var src = "/static/img/pgd_mnist.png"+"?t=" + Math.random();
+            var timeout=setTimeout(function () {
+                $("#pgd_mnist").attr('src', src)
+            }, 100);
+        }
+    },
+        {
         key: 'recognizeDraw',
         value: function recognizeDraw() {
             $.ajax({
@@ -204,7 +167,7 @@ var Main = function () {
                 dataType: "json",
                 success: function (data) {
                     var newData = eval(data);   //#将字符串转换为整数。
-                    for (var _i = 0; _i < 2; _i++) {
+                    for (var _i = 0; _i < 3; _i++) {
                         var max = 0;
                         var max_index = 0;
                         for (var _j = 0; _j < 10; _j++) {
@@ -238,7 +201,6 @@ var Main = function () {
         key: 'updateInput',
         value: function updateInput() {
             var img = new Image();
-            // alert("asdf");
             img.onload = function () {
                 inputs = [];
                 var small = document.createElement('canvas').getContext('2d');
@@ -259,14 +221,12 @@ var Main = function () {
                 $.ajax({
                     url: "/drawInput",
                     data: {"inputs": JSON.stringify(inputs)},
-                    type: "POST",
-                    async: false,
-                    dataType: "text",
-                    success: function (data) {
-                        newData = data;
-                    }
+                    type: "POST"
                 });
-                $(".drawInput").empty().append(newData);
+                var src = "/static/img/origin.png"+"?t=" + Math.random();
+                var timeout=setTimeout(function () {
+                    $("#origin").attr('src', src)
+                }, 100);
             };
             img.src = imgSrc;
         }
@@ -304,7 +264,14 @@ $(function () {
 
 $(function () {
     var main = new Main();
-    $('#attack_btn').click(function () {
-        main.attack();
+    $('#attack_btn_fgsm').click(function () {
+        main.attack_fgsm();
+    });
+});
+
+$(function () {
+    var main = new Main();
+    $('#attack_btn_pgd').click(function () {
+        main.attack_pgd();
     });
 });

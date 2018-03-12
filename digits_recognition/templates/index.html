@@ -7,7 +7,7 @@
 <body>
 <div class="container">
     <h1>MNIST</h1>
-    <div class="row">
+{#    <div class="row">#}
         <div class="col-md-6">
             <p>draw a digit here!</p>
             <canvas id="main"></canvas>
@@ -19,23 +19,31 @@
         </div>
         <div class="col-md-6">
             <p>input:</p>
-{#            <canvas id="input" style="border:1px solid" width="140" height="140"></canvas>#}
-{#            <canvas class="attack" style="border:1px solid" width="140" height="140"></canvas>#}
-            <div class="drawInput"></div>
-            <div class="attack"></div>
+            <div style="height: 200px; width: 200px; border: #080808">
+                <img id="origin">
+            </div>
+            <div style="height: 200px; width: 200px">
+                <img id="fgsm_mnist">
+            </div>
+            <div style="height: 200px; width: 200px">
+                <img id="pgd_mnist">
+            </div>
             <p>
-                <button id="attack_btn" class="btn btn-default">attack</button>
+                <button id="attack_btn_fgsm" class="btn btn-default">attack_fgsm</button>
+                <button id="attack_btn_pgd" class="btn btn-default">attack_pgd</button>
             </p>
             <hr>
             <p>output:</p>
             <table id="output" class="table">
                 <tr>
                     <th class="col-md-1"></th>
-                    <th class="col-md-2">regression</th>
-                    <th class="col-md-2">convolutional</th>
+                    <th class="col-md-2">origin</th>
+                    <th class="col-md-2">fgsm</th>
+                    <th class="col-md-2">pgd</th>
                 </tr>
                 <tr>
                     <th>0</th>
+                    <td></td>
                     <td></td>
                     <td></td>
                 </tr>
@@ -43,9 +51,11 @@
                     <th>1</th>
                     <td></td>
                     <td></td>
+                    <td></td>
                 </tr>
                 <tr>
                     <th>2</th>
+                    <td></td>
                     <td></td>
                     <td></td>
                 </tr>
@@ -53,9 +63,11 @@
                     <th>3</th>
                     <td></td>
                     <td></td>
+                    <td></td>
                 </tr>
                 <tr>
                     <th>4</th>
+                    <td></td>
                     <td></td>
                     <td></td>
                 </tr>
@@ -63,9 +75,11 @@
                     <th>5</th>
                     <td></td>
                     <td></td>
+                    <td></td>
                 </tr>
                 <tr>
                     <th>6</th>
+                    <td></td>
                     <td></td>
                     <td></td>
                 </tr>
@@ -73,14 +87,17 @@
                     <th>7</th>
                     <td></td>
                     <td></td>
+                    <td></td>
                 </tr>
                 <tr>
                     <th>8</th>
                     <td></td>
                     <td></td>
+                    <td></td>
                 </tr>
                 <tr>
                     <th>9</th>
+                    <td></td>
                     <td></td>
                     <td></td>
                 </tr>
@@ -94,11 +111,7 @@
                 <button id="updateInput" class="btn btn-default">recognize upload</button>
             </p>
         </div>
-        <div class="col-md-6 column">
-            <h3>result:</h3>
-            <h2 id="rec_result"></h2>
-        </div>
-    </div>
+{#    </div>#}
 </div>
 </body>
 <script type="text/javascript" src="/static/js/jquery.min.js"></script>

@@ -15,16 +15,14 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
-from digits_recognition.views import index
-from digits_recognition.views import process
-from digits_recognition.views import attack
-from digits_recognition.views import drawInput
+from digits_recognition.views import index, process, attack_fgsm, attack_pgd, drawInput
 
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^$', index),
     url(r'^process', process),
-    url(r'^attack', attack),
+    url(r'^attack_fgsm', attack_fgsm),
+    url(r'^attack_pgd', attack_pgd),
     url(r'^drawInput', drawInput),
 ]
