@@ -58,6 +58,9 @@ var Main = function () {
             this.ctx.strokeRect(0, 0, 449, 449);
             this.ctx.lineWidth = 0.05;
             $('#output').find('td').text('').removeClass('success');
+            $('#origin').attr('src', '')
+            $('#fgsm_mnist').attr('src', '')
+            $('#pgd_mnist').attr('src', '')
         }
     }, {
         key: 'onMouseDown',
@@ -113,7 +116,6 @@ var Main = function () {
                 if (Math.min.apply(Math, inputs) === 255) {
                     return;
                 }
-                newData = [];
                 $.ajax({
                     url: "/drawInput",
                     data: {"inputs": JSON.stringify(inputs)},
@@ -140,8 +142,7 @@ var Main = function () {
                 $("#fgsm_mnist").attr('src', src)
             }, 100);
         }
-    },
-        {
+    }, {
         key: 'attack_pgd',
         value: function attack_pgd() {
             newData = [];
@@ -153,10 +154,9 @@ var Main = function () {
             var src = "/static/img/pgd_mnist.png"+"?t=" + Math.random();
             var timeout=setTimeout(function () {
                 $("#pgd_mnist").attr('src', src)
-            }, 100);
+            }, 200);
         }
-    },
-        {
+    }, {
         key: 'recognizeDraw',
         value: function recognizeDraw() {
             $.ajax({

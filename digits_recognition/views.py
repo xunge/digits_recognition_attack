@@ -27,6 +27,8 @@ img_size = 28
 img_chan = 1
 n_classes = 10
 
+base_url = 'digits_recognition/static/img/'
+
 with tf.variable_scope('model'):
     env.x = tf.placeholder(tf.float32, (None, img_size, img_size, img_chan),
                            name='x')
@@ -143,6 +145,28 @@ def make_pgd(sess, env, X_data, epsilon=0.3, epochs=1, eps=0.01, batch_size=128)
     return X_adv
 
 
+def img_change(img):
+    X_tmp1 = np.empty((10, 28, 28))
+    X_tmp = 1 - img
+    X_tmp1[0] = np.squeeze(X_tmp)
+    fig = plt.figure(figsize=(1, 1))
+    gs = gridspec.GridSpec(1, 1)
+    ax = fig.add_subplot(gs[0, 0])
+    ax.imshow(X_tmp1[0], cmap='gray', interpolation='none')
+    # 去除坐标轴
+    ax.set_xticks([])
+    ax.set_yticks([])
+    # 去除边框
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.spines['left'].set_visible(False)
+    # 设置大小
+    fig.set_size_inches(2, 2)
+    gs.tight_layout(fig)
+    os.makedirs('img', exist_ok=True)
+
+
 def index(request):
     return render(request, 'index.html')
 
@@ -156,13 +180,10 @@ def process(request):
     input = ((255 - np.array(eval(request.POST.get('inputs')), dtype=np.float32)) / 255.0).reshape(1, 28, 28, 1)
     X_adv = make_fgsm(sess, env, input, eps=0.02, epochs=8)
     X_adv2 = make_pgd(sess, env, input, epsilon=0.3, eps=0.02, epochs=8)
-
-
     # 一维数组，输出10个预测概率
     output1 = predict(sess, env, input).flatten().tolist()
     output2 = predict(sess, env, X_adv).flatten().tolist()
     output3 = predict(sess, env, X_adv2).flatten().tolist()
-
     return HttpResponse(json.dumps([output1, output2, output3]))
 
 
@@ -170,28 +191,8 @@ def process(request):
 def drawInput(request):
     #标准化数据
     input = ((255 - np.array(eval(request.POST.get('inputs')), dtype=np.float32)) / 255.0).reshape(1, 28, 28, 1)
-    # print(input)
-    X_tmp1 = np.empty((10, 28, 28))
-    X_tmp = 1 - input
-    X_tmp1[0] = np.squeeze(X_tmp)
-    fig = plt.figure(figsize=(1, 1))
-    gs = gridspec.GridSpec(1, 1)
-
-    ax = fig.add_subplot(gs[0, 0])
-    ax.imshow(X_tmp1[0], cmap='gray', interpolation='none')
-    ax.set_xticks([])
-    ax.set_yticks([])
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['bottom'].set_visible(False)
-    ax.spines['left'].set_visible(False)
-
-    fig.set_size_inches(2, 2)
-
-    gs.tight_layout(fig)
-
-    os.makedirs('img', exist_ok=True)
-    plt.savefig('digits_recognition/static/img/origin.png')
+    img_change(input)
+    plt.savefig(base_url + 'origin.png')
     return HttpResponse()
 
 
@@ -200,27 +201,8 @@ def attack_fgsm(request):
     #标准化数据
     input = ((255 - np.array(eval(request.POST.get('inputs')), dtype=np.float32)) / 255.0).reshape(1, 28, 28, 1)
     X_adv = make_fgsm(sess, env, input, eps=0.02, epochs=8)
-    X_tmp = 1 - X_adv
-    X_tmp1 = np.empty((10, 28, 28))
-    X_tmp1[0] = np.squeeze(X_tmp[0])
-    fig = plt.figure(figsize=(1, 1))
-    gs = gridspec.GridSpec(1, 1)
-
-    ax = fig.add_subplot(gs[0, 0])
-    ax.imshow(X_tmp1[0], cmap='gray', interpolation='none')
-    ax.set_xticks([])
-    ax.set_yticks([])
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['bottom'].set_visible(False)
-    ax.spines['left'].set_visible(False)
-
-    fig.set_size_inches(2, 2)
-
-    gs.tight_layout(fig)
-
-    os.makedirs('img', exist_ok=True)
-    plt.savefig('digits_recognition/static/img/fgsm_mnist.png')
+    img_change(X_adv)
+    plt.savefig(base_url + 'fgsm_mnist.png')
     return HttpResponse()
 
 
@@ -229,25 +211,6 @@ def attack_pgd(request):
     #标准化数据
     input = ((255 - np.array(eval(request.POST.get('inputs')), dtype=np.float32)) / 255.0).reshape(1, 28, 28, 1)
     X_adv = make_pgd(sess, env, input, epsilon=0.3, eps=0.02, epochs=8)
-    X_tmp = 1 - X_adv
-    X_tmp1 = np.empty((10, 28, 28))
-    X_tmp1[0] = np.squeeze(X_tmp[0])
-    fig = plt.figure(figsize=(1, 1))
-    gs = gridspec.GridSpec(1, 1)
-
-    ax = fig.add_subplot(gs[0, 0])
-    ax.imshow(X_tmp1[0], cmap='gray', interpolation='none')
-    ax.set_xticks([])
-    ax.set_yticks([])
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['bottom'].set_visible(False)
-    ax.spines['left'].set_visible(False)
-
-    fig.set_size_inches(2, 2)
-
-    gs.tight_layout(fig)
-
-    os.makedirs('img', exist_ok=True)
-    plt.savefig('digits_recognition/static/img/pgd_mnist.png')
+    img_change(X_adv)
+    plt.savefig(base_url + 'pgd_mnist.png')
     return HttpResponse()
